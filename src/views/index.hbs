@@ -1,1 +1,34 @@
-<h1>Hola Mundo 2</h1>
+<div class="container">
+	<div class="row">
+		<div class="col-md-12 mx-auto">
+			<div class="card">
+				<div class="card-header text-center">
+					<h3>Consultores</h3>
+				</div>
+				<div class="card-body">
+					{{!-- <form action="/" method="post" accept-charset="utf-8"> --}}
+					<div class="row">
+						<div class="col-md-5">
+							<select multiple class="custom-select" size="10" name="consultores" id="consultores">
+								{{#each consultores}}
+									 <option value="{{co_usuario}}">{{no_usuario}}</option>
+								{{/each}}
+							</select>
+						</div>
+						<div class="col-md-2 my-auto">
+							<button class="btn btn-primary" id="boton1" onclick="mover(consultores2, consultores);"><<<<</button>
+							<button class="btn btn-primary" id="boton2" onclick="mover(consultores, consultores2);">>>>></button>
+						</div>
+							<div class="col-md-5">
+								<div class="from-group">
+									<select multiple class="custom-select form-control" size="10" name="consultores2" id="consultores2">
+								</select>
+								</div>
+							</div>
+					</div>
+					{{!-- </form> --}}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
