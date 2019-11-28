@@ -6,7 +6,38 @@
 					<h3>Consultores</h3>
 				</div>
 				<div class="card-body">
-					{{!-- <form action="/" method="post" accept-charset="utf-8"> --}}
+					<div class="row">
+						<div class="col-md-3 mx-auto">
+							<label for="mesDesde" class="">Desde:</label>
+							<select name="mesDesde" class="custom-select-sm form-control">
+								{{#each meses}}
+									<option value="{{mes}}">{{nombre}}</option>
+								{{/each}}
+							</select>
+							<select name="anioDesde" class="custom-select-sm form-control">
+								{{#each anios}}
+									<option value="{{anio}}">{{anio}}</option>
+								{{else}}
+									<option value="{{anios}}">{{anios}}</option>
+								{{/each}}
+							</select>
+						</div>
+						<div class="col-md-3 mx-auto">
+							<label for="mesHasta">Hasta:</label>
+							<select name="mesHasta" class="custom-select-sm form-control">
+								{{#each meses}}
+									<option value="{{mes}}">{{nombre}}</option>
+								{{/each}}
+							</select>
+							<select name="anioHasta" class="custom-select-sm form-control">
+								{{#each anios}}
+									<option value="{{anio}}">{{anio}}</option>
+								{{else}}
+									<option value="{{anios}}">{{anios}}</option>
+								{{/each}}
+							</select>
+						</div>
+					</div>
 					<div class="row">
 						<div class="col-md-5">
 							<select multiple class="custom-select" size="10" name="consultores" id="consultores">
@@ -19,14 +50,20 @@
 							<button class="btn btn-primary" id="boton1" onclick="mover(consultores2, consultores);"><<<<</button>
 							<button class="btn btn-primary" id="boton2" onclick="mover(consultores, consultores2);">>>>></button>
 						</div>
-							<div class="col-md-5">
-								<div class="from-group">
-									<select multiple class="custom-select form-control" size="10" name="consultores2" id="consultores2">
+						<div class="col-md-5">
+							<div class="from-group">
+								<select multiple class="custom-select form-control" size="10" name="consultores2" id="consultores2">
 								</select>
-								</div>
 							</div>
+						</div>
 					</div>
-					{{!-- </form> --}}
+					<div class="row text-center pt-5">
+						<div class="col-md-12">
+							<a href="/relatorio" title="Relatorio" class="btn btn-success">Relatorio</a>
+							<a href="" title="Grafico" class="btn btn-success">Grafico</a>
+							<a href="" title="Pizza" class="btn btn-success">Pizza</a>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
