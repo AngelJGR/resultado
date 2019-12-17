@@ -1,21 +1,35 @@
 const express = require("express");
 const router = express.Router();
 
-const util = require("../lib/util");
+const { getSelect } = require("../lib/util");
 const pool = require("../database");
 
 router.get("/", async (req, res) => {
-	const consultores = await pool.query("SELECT a.co_usuario, a.no_usuario FROM cao_usuario AS a \
-	INNER JOIN permissao_sistema AS b ON a.co_usuario = b.co_usuario \
-	WHERE b.co_sistema = 1 AND b.in_ativo = 'S' AND b.co_tipo_usuario IN(0,1,2)");
-	const rango_fechas = await pool.query("SELECT MIN(data_emissao) AS fecha_minima, MAX(data_emissao) AS fecha_maxima FROM cao_fatura;");
-	const anios = util.getAnio(rango_fechas).length > 1 ? util.getAnio(rango_fechas) : util.getAnio(rango_fechas)[0];
-	res.render("./", { consultores: consultores, meses: util.meses, anios: anios});
+	res.render("./");
 });
 
+router.post("/relatorio", async (req, res) => {
+	if(req.url.indexOf("") > 0) { return; }
+	const op = 1;
+	const { consultores, fecha_desde, fecha_hasta } = req.body;
+	const receita = await pool.query("SELECT b.co_usuario, a.co_fatura, a.co_cliente, a.co_sistema, a.co_os, a.total, a.valor, a.data_emissao, a.total_imp_inc \
+	FROM cao_fatura AS a \
+	INNER JOIN cao_os AS b ON a.co_os = b.co_os \
+	INNER JOIN cao_usuario AS c ON b.co_usuario = c.co_usuario \
+	WHERE SUBSTR(a.data_emissao, 1, 7) between ? AND ? \
+	AND b.co_usuario IN (?);", [fecha_desde, fecha_hasta, consultores]);
+	res.json({ receita });
+});
 
-router.get("/relatorio", (req, res) => {
-	res.render("./relatorio");
+router.get("/grafico", async (req, res) => {
+	const op = 2;
+	res.render("./", { op: op });
+});
+
+router.get("/pizza", async (req, res) => {
+	const op = 3;
+	res.render("./", { op: op });
 });
 
 module.exports = router;
+

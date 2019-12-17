@@ -7,9 +7,10 @@ WHERE b.co_sistema = 1 AND b.in_ativo = 'S' AND b.co_tipo_usuario IN(0,1,2);
 
 
 
-SELECT b.co_usuario, a.co_fatura, a.co_cliente, a.co_sistema, a.co_os, a.total, a.data_emissao, a.total_imp_inc
+SELECT b.co_usuario, a.co_fatura, a.co_cliente, a.co_sistema, a.co_os, a.total, a.valor, a.data_emissao, a.total_imp_inc
 FROM cao_fatura AS a
 INNER JOIN cao_os AS b ON a.co_os = b.co_os
-WHERE a.data_emissao between"2007-02-01" AND "2007-06-30"
-AND b.co_usuario = (SELECT co_usuario FROM cao_usuario WHERE co_usuario = "anapaula.chiodaro");
+INNER JOIN cao_usuario AS c ON b.co_usuario = c.co_usuario
+WHERE SUBSTR(a.data_emissao, 1, 7) between"2007-02" AND "2007-06"
+AND b.co_usuario IN ("anapaula.chiodaro");
 

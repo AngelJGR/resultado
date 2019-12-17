@@ -1,34 +1,3 @@
-
-
-
-
-
-// function mover(valor){
-// 	if (valor === 1) {
-// 		var array = document.getElementById("consultores");
-// 		var arrayDos = document.getElementById("consultores2");
-// 		var seleccionar = array.selectedIndex;
-// 		console.log(seleccionar);
-// 		var seleccionarDos = arrayDos.options.length;
-// 		if (seleccionar !=1) {
-// 			var mover = array.options[seleccionar];
-// 			arrayDos.options[seleccionarDos] = new Option(mover.text, mover.value);
-// 			array.options[seleccionar] = null;
-// 		}
-// 	}else if(valor === 2){
-// 		var array = document.getElementById("consultores2");
-// 		var arrayDos = document.getElementById("consultores");
-// 		var seleccionar = array.selectedIndex;
-// 		var seleccionarDos = arrayDos.options.length;
-// 		if (seleccionar !=1) {
-// 			var mover = array.options[seleccionar];
-// 			arrayDos.options[seleccionarDos] = new Option(mover.text, mover.value);
-// 			array.options[seleccionar] = null;
-// 		}
-// 	}
-// }
-
-
 function mover(fbox, tbox) {
 	var arrFbox = new Array();
 	var arrTbox = new Array();
@@ -69,3 +38,21 @@ function mover(fbox, tbox) {
 		tbox[c] = no;
 	}
 }
+
+$(document).ready(function(){
+   $("#relatorio").click(function(){
+		var consultores = [];
+		var fecha_desde = $("#anioDesde").val()+"-"+$("#mesDesde").val();
+		var fecha_hasta = $("#anioHasta").val()+"-"+$("#mesHasta").val();
+		$("#consultores2 option").each(function(i,op){
+			consultores.push($(op).val());
+		});
+		$.post( "/relatorio", { consultores, fecha_desde ,fecha_hasta }, function(data, status){
+			console.log(data);
+			$('#resultado').text(data);
+		});
+	});
+});
+
+
+

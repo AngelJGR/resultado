@@ -6,15 +6,15 @@
 					<h3>Consultores</h3>
 				</div>
 				<div class="card-body">
-					<div class="row">
-						<div class="col-md-3 mx-auto">
-							<label for="mesDesde" class="">Desde:</label>
-							<select name="mesDesde" class="custom-select-sm form-control">
+					<div class="row mx-auto pb-3">
+						<div class="col-md-3">
+							<label for="mesDesde">Desde:</label>
+							<select name="mesDesde" id="mesDesde" class="custom-select-sm">
 								{{#each meses}}
 									<option value="{{mes}}">{{nombre}}</option>
 								{{/each}}
 							</select>
-							<select name="anioDesde" class="custom-select-sm form-control">
+							<select name="anioDesde" id="anioDesde" class="custom-select-sm">
 								{{#each anios}}
 									<option value="{{anio}}">{{anio}}</option>
 								{{else}}
@@ -22,14 +22,14 @@
 								{{/each}}
 							</select>
 						</div>
-						<div class="col-md-3 mx-auto">
+						<div class="col-md-3">
 							<label for="mesHasta">Hasta:</label>
-							<select name="mesHasta" class="custom-select-sm form-control">
+							<select name="mesHasta" id="mesHasta" class="custom-select-sm">
 								{{#each meses}}
 									<option value="{{mes}}">{{nombre}}</option>
 								{{/each}}
 							</select>
-							<select name="anioHasta" class="custom-select-sm form-control">
+							<select name="anioHasta" id="anioHasta" class="custom-select-sm">
 								{{#each anios}}
 									<option value="{{anio}}">{{anio}}</option>
 								{{else}}
@@ -47,21 +47,21 @@
 							</select>
 						</div>
 						<div class="col-md-2 my-auto">
-							<button class="btn btn-primary" id="boton1" onclick="mover(consultores2, consultores);"><<<<</button>
-							<button class="btn btn-primary" id="boton2" onclick="mover(consultores, consultores2);">>>>></button>
+							<a href="#" class="btn btn-primary" id="boton1" onclick="mover(consultores2, consultores);"><<<<</a>
+							<a href="#" class="btn btn-primary" id="boton2" onclick="mover(consultores, consultores2);">>>>></a>
 						</div>
 						<div class="col-md-5">
 							<div class="from-group">
-								<select multiple class="custom-select form-control" size="10" name="consultores2" id="consultores2">
+								<select multiple="multiple" class="custom-select form-control" size="10" name="consultores2" id="consultores2">
 								</select>
 							</div>
 						</div>
 					</div>
 					<div class="row text-center pt-5">
 						<div class="col-md-12">
-							<a href="/relatorio" title="Relatorio" class="btn btn-success">Relatorio</a>
-							<a href="" title="Grafico" class="btn btn-success">Grafico</a>
-							<a href="" title="Pizza" class="btn btn-success">Pizza</a>
+							<button title="Relatorio" id="relatorio" class="btn btn-success">Relatorio</button>
+							<a href="/grafico" title="Grafico" class="btn btn-success">Grafico</a>
+							<a href="/pizza" title="Pizza" class="btn btn-success">Pizza</a>
 						</div>
 					</div>
 				</div>
