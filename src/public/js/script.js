@@ -40,19 +40,49 @@ function mover(fbox, tbox) {
 }
 
 $(document).ready(function(){
-   $("#relatorio").click(function(){
-		var consultores = [];
-		var fecha_desde = $("#anioDesde").val()+"-"+$("#mesDesde").val();
-		var fecha_hasta = $("#anioHasta").val()+"-"+$("#mesHasta").val();
+	$("#resultado-container").addClass("d-none");
+	$("#relatorio").click(function(){
+		const consultores = [];
+		const mes_desde = $("#mesDesde").val();
+		const anio_desde = $("#anioDesde").val();
+		const mes_hasta = $("#mesHasta").val();
+		const anio_hasta = $("#anioHasta").val();
+		
 		$("#consultores2 option").each(function(i,op){
 			consultores.push($(op).val());
 		});
-		$.post( "/relatorio", { consultores, fecha_desde ,fecha_hasta }, function(data, status){
-			console.log(data);
-			$('#resultado').text(data);
+		$.post( "/relatorio", { consultores, mes_desde, anio_desde, mes_hasta, anio_hasta }, function(data, status){
+			renderizarRelatorio(data)
+			//$('#resultado').text(data);
 		});
 	});
 });
+
+function renderizarRelatorio(data){
+	var datos = data.receita;
+	$("#resultado-container").removeClass("d-none");
+	console.log(datos)
+	if(datos.length > 0){
+		for ( consultor of datos ){
+			var currentFila = $(".filas-template.d-none").clone();
+			$(".periodo", currentFila).text(consultor.anio + "-" + consultor.mes);
+			$(".receita_liquida", currentFila).text(consultor.receita_liquida);
+			$(".custo_fixo", currentFila).text(consultor.custo_fixo);
+			$(".comissao", currentFila).text(consultor.comissao);
+			$(".lucro", currentFila).text(obtenerLucro(consultor.receita_liquida, consultor.custo_fixo, consultor.comissao));
+			currentFila.removeClass('d-none');
+			$('tbody').append(currentFila);
+		}
+	} else {
+		//Añadir mensaje en el HTML Pendiente
+		//$("#resultado").html("<h1>No se encontraron datos</h1>");
+	}
+}
+
+function obtenerLucro(receita_liquida, custo_fixo, comissao) {
+	return receita_liquida - (custo_fixo + comissao);
+}
+
 
 
 

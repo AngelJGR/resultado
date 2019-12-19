@@ -3,6 +3,8 @@ const router = express.Router();
 
 const { getSelect } = require("../lib/util");
 const pool = require("../database");
+const fileSystem = require('fs');
+const path = require('path');
 
 router.get("/", async (req, res) => {
 	res.render("./");
@@ -11,13 +13,22 @@ router.get("/", async (req, res) => {
 router.post("/relatorio", async (req, res) => {
 	if(req.url.indexOf("") > 0) { return; }
 	const op = 1;
-	const { consultores, fecha_desde, fecha_hasta } = req.body;
-	const receita = await pool.query("SELECT b.co_usuario, a.co_fatura, a.co_cliente, a.co_sistema, a.co_os, a.total, a.valor, a.data_emissao, a.total_imp_inc \
+	const { consultores, mes_desde, anio_desde, mes_hasta, anio_hasta } = req.body;
+	console.log(consultores);
+	const receita = await pool.query("SELECT b.co_usuario, c.no_usuario, YEAR( a.data_emissao ) AS anio, MONTH( a.data_emissao ) as mes, \
+	ROUND( SUM( a.valor - (( a.total_imp_inc / 100 ) * a.valor) ), 2 ) AS receita_liquida, \
+	d.brut_salario AS custo_fixo, \
+	ROUND(SUM( ( a.valor - ( ( a.total_imp_inc / 100 ) * a.valor) ) * ( a.comissao_cn / 100 ) ), 2 ) AS comissao \
 	FROM cao_fatura AS a \
 	INNER JOIN cao_os AS b ON a.co_os = b.co_os \
 	INNER JOIN cao_usuario AS c ON b.co_usuario = c.co_usuario \
-	WHERE SUBSTR(a.data_emissao, 1, 7) between ? AND ? \
-	AND b.co_usuario IN (?);", [fecha_desde, fecha_hasta, consultores]);
+	INNER JOIN cao_salario AS d ON c.co_usuario = d.co_usuario \
+	WHERE MONTH( a.data_emissao ) between ? AND ? \
+	AND YEAR( a.data_emissao ) between ? AND ? \
+	AND b.co_usuario IN (?) \
+	GROUP BY c.co_usuario, mes, anio; ", [mes_desde, mes_hasta, anio_desde, anio_hasta, consultores]);
+	console.log(receita);
+
 	res.json({ receita });
 });
 
