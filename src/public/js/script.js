@@ -40,7 +40,6 @@ function mover(fbox, tbox) {
 }
 
 $(document).ready(function(){
-	$("#resultado-container").addClass("d-none");
 	$("#relatorio").click(function(){
 		const consultores = [];
 		const mes_desde = $("#mesDesde").val();
@@ -58,31 +57,80 @@ $(document).ready(function(){
 	});
 });
 
+/*EDITANDO ESTE*/
 function renderizarRelatorio(data){
-	var datos = data.receita;
-	$("#resultado-container").removeClass("d-none");
-	console.log(datos)
-	if(datos.length > 0){
-		for ( consultor of datos ){
-			var currentFila = $(".filas-template.d-none").clone();
-			$(".periodo", currentFila).text(consultor.anio + "-" + consultor.mes);
-			$(".receita_liquida", currentFila).text(consultor.receita_liquida);
-			$(".custo_fixo", currentFila).text(consultor.custo_fixo);
-			$(".comissao", currentFila).text(consultor.comissao);
-			$(".lucro", currentFila).text(obtenerLucro(consultor.receita_liquida, consultor.custo_fixo, consultor.comissao));
-			currentFila.removeClass('d-none');
-			$('tbody').append(currentFila);
+	var consultor = data.receita;
+	var meses = data.meses;
+	console.log(consultor);
+	var total_receita_liquida = 0, total_custo_fixo = 0, total_comissao = 0, total_lucro = 0;
+	var options = { style: 'currency', currency: 'USD' }
+	var formatNumber = Intl.NumberFormat('en-US', options);
+	$("#resultado-relatorio").removeClass("d-none");
+	$("#vacio").addClass("d-none");
+	$(".card.card-relatorio").not(".d-none").remove();
+	if ( consultor.length > 0 ){
+		for ( let i = 0; i < consultor.length; i++ ){
+			if ( i == 0 ) {
+				var currentCard = $(".card.card-relatorio.d-none").clone();
+				currentCard.removeClass('d-none');
+				$('#consultor-header', currentCard).text(consultor[i].no_usuario);
+				$('#resultado').append(currentCard);
+			} else if ( consultor[i].no_usuario != consultor[i-1].no_usuario ) {
+				total_receita_liquida = 0, total_custo_fixo = 0, total_comissao = 0, total_lucro = 0;
+				var currentCard = $(".card.card-relatorio.d-none").clone();
+				currentCard.removeClass('d-none');
+				$('#consultor-header', currentCard).text(consultor[i].no_usuario);
+				$('#resultado').append(currentCard);
+			}
+			var currentFila = $(".filas-template.d-none", currentCard).clone();//Clonando las filas
+			//Formateando la data para mostrar
+			var periodo = getPeriodo(consultor[i].mes, consultor[i].anio, meses);
+			var receita_liquida = formatNumber.format(consultor[i].receita_liquida);
+			var custo_fixo = formatNumber.format(consultor[i].custo_fixo);
+			var comissao = formatNumber.format(consultor[i].comissao);
+			var lucro = formatNumber.format(consultor[i].receita_liquida - (consultor[i].custo_fixo + consultor[i].comissao))
+			//Seteando los valores fortmateados en el DOM
+			$(".periodo", currentFila).text(periodo);
+			$(".receita_liquida", currentFila).text(receita_liquida);
+			$(".custo_fixo", currentFila).text(custo_fixo);
+			$(".comissao", currentFila).text(comissao);
+			$(".lucro", currentFila).text(lucro);
+			currentFila.removeClass("d-none");
+			$('tbody', currentCard).append(currentFila);//Append
+			//Acumulando el total de los valores por consultor
+			total_receita_liquida = total_receita_liquida + consultor[i].receita_liquida; 
+			total_custo_fixo = total_custo_fixo + consultor[i].custo_fixo; 
+			total_comissao = total_comissao + consultor[i].comissao; 
+			total_lucro = total_lucro + (consultor[i].receita_liquida - (consultor[i].custo_fixo + consultor[i].comissao)); 
+			//Condicion para poner el total por consultor
+			if ( i == consultor.length - 1) {
+				var currentTotal = $(".filas-total.d-none.text-right", currentCard).clone();
+				currentTotal.removeClass('d-none');
+				$(".total_receita_liquida", currentTotal).text(formatNumber.format(total_receita_liquida));
+				$(".total_custo_fixo", currentTotal).text(formatNumber.format(total_custo_fixo));
+				$(".total_comissao", currentTotal).text(formatNumber.format(total_comissao));
+				$(".total_lucro", currentTotal).text(formatNumber.format(total_lucro));
+				$('tbody', currentCard).append(currentTotal);
+			}
+			else if( consultor[i].no_usuario != consultor[i+1].no_usuario ) {
+				var currentTotal = $(".filas-total.d-none.text-right", currentCard).clone();
+				currentTotal.removeClass('d-none');
+				$(".total_receita_liquida", currentTotal).text(formatNumber.format(total_receita_liquida));
+				$(".total_custo_fixo", currentTotal).text(formatNumber.format(total_custo_fixo));
+				$(".total_comissao", currentTotal).text(formatNumber.format(total_comissao));
+				$(".total_lucro", currentTotal).text(formatNumber.format(total_lucro));
+				$('tbody', currentCard).append(currentTotal);
+			}
 		}
 	} else {
-		//Añadir mensaje en el HTML Pendiente
-		//$("#resultado").html("<h1>No se encontraron datos</h1>");
+		$(".card.card-relatorio").addClass('d-none');
+		$("#vacio").removeClass("d-none");
 	}
 }
 
-function obtenerLucro(receita_liquida, custo_fixo, comissao) {
-	return receita_liquida - (custo_fixo + comissao);
+function getPeriodo (mes, anio, objetoMes) {
+	var { nombre } = objetoMes.find(m => m.mes == mes);
+	return nombre + " de " + anio;
 }
-
-
 
 

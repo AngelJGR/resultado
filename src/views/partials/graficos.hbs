@@ -1,27 +1,41 @@
-<div class="container" id="resultado-container">
+<div class="container d-none" id="resultado-relatorio">
 	<div class="row">
 		<div class="col-md-12 mx-auto text-center" id="resultado">
-			<table class="table">
-			  <thead>
-			    <tr>
-			      <th scope="col">Periodo</th>
-			      <th scope="col">Receita Liquida</th>
-			      <th scope="col">Custo Fixo</th>
-			      <th scope="col">Comissao</th>
-			      <th scope="col">Lucro</th>
-			    </tr>
-			  </thead>
-			  <tbody>
-			    <tr class="filas-template d-none">
-			      <td class="periodo"></td>
-			      <td class="receita_liquida"></td>
-			      <td class="custo_fixo"></td>
-			      <td class="comissao"></td>
-			      <td class="lucro"></td>
-			    </tr>
-			    
-			  </tbody>
-			</table>
+			<div class="card card-relatorio d-none">
+				<div class="card-header text-center">
+					<h5 id="consultor-header" class="text-muted"></h5>
+				</div>
+				<div class="card-body">
+					<table class="table table-striped" id="tabla-contenido">
+					  <thead>
+					    <tr class="filas-h-template">
+					      <th scope="col">Periodo</th>
+					      <th scope="col">Receita Liquida</th>
+					      <th scope="col">Custo Fixo</th>
+					      <th scope="col">Comissao</th>
+					      <th scope="col">Lucro</th>
+					    </tr>
+					  </thead>
+					  <tbody>
+					    <tr class="filas-template d-none text-right">
+					      <td class="periodo text-left"></td>
+					      <td class="receita_liquida"></td>
+					      <td class="custo_fixo"></td>
+					      <td class="comissao"></td>
+					      <td class="lucro"></td>
+					    </tr>
+					    <tr class="filas-total d-none text-right">
+					      <th class="total text-left" scope="col">TOTAL</th>
+					      <th class="total_receita_liquida" scope="col"></th>
+					      <th class="total_custo_fixo" scope="col"></th>
+					      <th class="total_comissao" scope="col"></th>
+					      <th class="total_lucro" scope="col"></th>
+					    </tr>
+					  </tbody>
+					</table>
+				</div>
+			</div>
+			<h1 id="vacio" class="d-none">No se encontraron resultados</h1>
 		</div>
 	</div>
 </div>
