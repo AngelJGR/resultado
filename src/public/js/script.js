@@ -39,7 +39,9 @@ function mover(fbox, tbox) {
 	}
 }
 
+
 $(document).ready(function(){
+	/*BOTON RELATORIO*/
 	$("#relatorio").click(function(){
 		const consultores = [];
 		const mes_desde = $("#mesDesde").val();
@@ -52,16 +54,30 @@ $(document).ready(function(){
 		});
 		$.post( "/relatorio", { consultores, mes_desde, anio_desde, mes_hasta, anio_hasta }, function(data, status){
 			renderizarRelatorio(data)
+		});
+	});
+
+	/*BOTON GRAFICO*/
+	$("#grafico").click(function(){
+		const consultores = [];
+		const mes_desde = $("#mesDesde").val();
+		const anio_desde = $("#anioDesde").val();
+		const mes_hasta = $("#mesHasta").val();
+		const anio_hasta = $("#anioHasta").val();
+		
+		$("#consultores2 option").each(function(i,op){
+			consultores.push($(op).val());
+		});
+		$.post( "/grafico", { consultores, mes_desde, anio_desde, mes_hasta, anio_hasta }, function(data, status){
+			renderizarGrafico(data);
 			//$('#resultado').text(data);
 		});
 	});
 });
 
-/*EDITANDO ESTE*/
 function renderizarRelatorio(data){
 	var consultor = data.receita;
 	var meses = data.meses;
-	console.log(consultor);
 	var total_receita_liquida = 0, total_custo_fixo = 0, total_comissao = 0, total_lucro = 0;
 	var options = { style: 'currency', currency: 'USD' }
 	var formatNumber = Intl.NumberFormat('en-US', options);
@@ -69,6 +85,7 @@ function renderizarRelatorio(data){
 	$("#vacio").addClass("d-none");
 	$(".card.card-relatorio").not(".d-none").remove();
 	if ( consultor.length > 0 ){
+		/*PARA CLONAR LOS CARD CUANDO CONSIGA EL PRIMER CONSULTOR Y EL SIGUIENTE DIFERENTE AL ACTUAL*/
 		for ( let i = 0; i < consultor.length; i++ ){
 			if ( i == 0 ) {
 				var currentCard = $(".card.card-relatorio.d-none").clone();
@@ -126,6 +143,105 @@ function renderizarRelatorio(data){
 		$(".card.card-relatorio").addClass('d-none');
 		$("#vacio").removeClass("d-none");
 	}
+}
+
+
+function renderizarGrafico(data){
+	const grafico = data;
+	$("#resultado-grafico").removeClass("d-none");
+	var options = {
+		animationEnabled: true,
+		theme: "light2",
+		title: {
+			text: "Monthly Sales Data"
+		},
+		axisX: {
+			valueFormatString: "MMM",
+			interval: 1,
+   			intervalType: "month"
+		},
+		axisY: {
+			prefix: "$",
+			labelFormatter: addSymbols
+			
+		},
+		toolTip: {
+			shared: true
+		},
+		legend: {
+			cursor: "pointer",
+			itemclick: toggleDataSeries
+		},
+		data: [
+			{
+				type: "line",
+				name: "Promedio Costo Fijo",
+				showInLegend: true,
+				yValueFormatString: "$#,##0",
+				dataPoints: [
+				]
+			}
+		]
+	};
+	setData(grafico);
+	console.log(options.data);
+	$("#chartContainer").CanvasJSChart(options);
+
+	function addSymbols(e) {
+		var suffixes = ["", "K", "M", "B"];
+		var order = Math.max(Math.floor(Math.log(e.value) / Math.log(1000)), 0);
+
+		if (order > suffixes.length - 1)
+			order = suffixes.length - 1;
+
+		var suffix = suffixes[order];
+		return CanvasJS.formatNumber(e.value / Math.pow(1000, order)) + suffix;
+	}
+
+	function toggleDataSeries(e) {
+		if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+			e.dataSeries.visible = false;
+		} else {
+			e.dataSeries.visible = true;
+		}
+		e.chart.render();
+	}
+	function setData(grafico){
+		var totalCosto = 0;
+		var promedio = getPromedio(grafico);
+		for ( let i = 0; i < grafico.length; i++ ) {
+			if ( i == 0 || grafico[i].co_usuario != grafico[i-1].co_usuario ) {
+				options.data.push({
+					type: "column",
+					name: grafico[i].no_usuario,
+					showInLegend: true,
+					xValueFormatString: "MMM YYYY",
+					yValueFormatString: "$#,##0",
+					dataPoints: []
+				});
+			}
+			options.data[options.data.length - 1].dataPoints.push({ x: new Date(grafico[i].anio, grafico[i].mes - 1 ), y: grafico[i].receita_liquida });
+			if ( i == 0 || (grafico[i].mes != grafico[i-1].mes) ) {
+				options.data[0].dataPoints.push({ x: new Date(grafico[i].anio, grafico[i].mes - 1 ), y: promedio });
+			}
+		}
+	}
+}
+
+
+function getPromedio (grafico) {
+	var custo_fixo = 0;
+	var costos = grafico.filter((current, i, a) => {
+		if( i == 0 || current.co_usuario != a[i-1].co_usuario ) {
+			custo_fixo = custo_fixo + current.custo_fixo;
+			return true
+		} else {
+			return false
+		}
+	});
+	return custo_fixo / costos.length;
+
+	//console.log(custo_total / unique.length);
 }
 
 function getPeriodo (mes, anio, objetoMes) {
