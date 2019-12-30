@@ -21,8 +21,10 @@ router.post("/grafico", async (req, res) => {
 	res.json( grafico );
 });
 
-router.get("/pizza", async (req, res) => {
-	res.render("./");
+router.post("/pizza", async (req, res) => {
+	const { consultores, mes_desde, anio_desde, mes_hasta, anio_hasta } = req.body;
+	const grafico = await pool.query(consulta, [mes_desde, mes_hasta, anio_desde, anio_hasta, consultores]);
+	res.json( grafico );
 });
 
 module.exports = router;

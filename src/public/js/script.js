@@ -53,7 +53,7 @@ $(document).ready(function(){
 			consultores.push($(op).val());
 		});
 		$.post( "/relatorio", { consultores, mes_desde, anio_desde, mes_hasta, anio_hasta }, function(data, status){
-			renderizarRelatorio(data)
+			renderizarRelatorio(data);
 		});
 	});
 
@@ -70,7 +70,22 @@ $(document).ready(function(){
 		});
 		$.post( "/grafico", { consultores, mes_desde, anio_desde, mes_hasta, anio_hasta }, function(data, status){
 			renderizarGrafico(data);
-			//$('#resultado').text(data);
+		});
+	});
+
+	/*BOTON PIZZA*/
+	$("#pizza").click(function(){
+		const consultores = [];
+		const mes_desde = $("#mesDesde").val();
+		const anio_desde = $("#anioDesde").val();
+		const mes_hasta = $("#mesHasta").val();
+		const anio_hasta = $("#anioHasta").val();
+		
+		$("#consultores2 option").each(function(i,op){
+			consultores.push($(op).val());
+		});
+		$.post( "/pizza", { consultores, mes_desde, anio_desde, mes_hasta, anio_hasta }, function(data, status){
+			renderizarPizza(data);
 		});
 	});
 });
@@ -83,16 +98,13 @@ function renderizarRelatorio(data){
 	var formatNumber = Intl.NumberFormat('en-US', options);
 	$("#resultado-relatorio").removeClass("d-none");
 	$("#vacio").addClass("d-none");
+	$("#resultado-grafico").addClass("d-none");
+	$("#resultado-pizza").addClass("d-none");
 	$(".card.card-relatorio").not(".d-none").remove();
 	if ( consultor.length > 0 ){
 		/*PARA CLONAR LOS CARD CUANDO CONSIGA EL PRIMER CONSULTOR Y EL SIGUIENTE DIFERENTE AL ACTUAL*/
 		for ( let i = 0; i < consultor.length; i++ ){
-			if ( i == 0 ) {
-				var currentCard = $(".card.card-relatorio.d-none").clone();
-				currentCard.removeClass('d-none');
-				$('#consultor-header', currentCard).text(consultor[i].no_usuario);
-				$('#resultado').append(currentCard);
-			} else if ( consultor[i].no_usuario != consultor[i-1].no_usuario ) {
+			if ( i == 0 || consultor[i].no_usuario != consultor[i-1].no_usuario ) {
 				total_receita_liquida = 0, total_custo_fixo = 0, total_comissao = 0, total_lucro = 0;
 				var currentCard = $(".card.card-relatorio.d-none").clone();
 				currentCard.removeClass('d-none');
@@ -120,16 +132,7 @@ function renderizarRelatorio(data){
 			total_comissao = total_comissao + consultor[i].comissao; 
 			total_lucro = total_lucro + (consultor[i].receita_liquida - (consultor[i].custo_fixo + consultor[i].comissao)); 
 			//Condicion para poner el total por consultor
-			if ( i == consultor.length - 1) {
-				var currentTotal = $(".filas-total.d-none.text-right", currentCard).clone();
-				currentTotal.removeClass('d-none');
-				$(".total_receita_liquida", currentTotal).text(formatNumber.format(total_receita_liquida));
-				$(".total_custo_fixo", currentTotal).text(formatNumber.format(total_custo_fixo));
-				$(".total_comissao", currentTotal).text(formatNumber.format(total_comissao));
-				$(".total_lucro", currentTotal).text(formatNumber.format(total_lucro));
-				$('tbody', currentCard).append(currentTotal);
-			}
-			else if( consultor[i].no_usuario != consultor[i+1].no_usuario ) {
+			if( i == consultor.length - 1 || consultor[i].no_usuario != consultor[i+1].no_usuario ) {
 				var currentTotal = $(".filas-total.d-none.text-right", currentCard).clone();
 				currentTotal.removeClass('d-none');
 				$(".total_receita_liquida", currentTotal).text(formatNumber.format(total_receita_liquida));
@@ -149,11 +152,13 @@ function renderizarRelatorio(data){
 function renderizarGrafico(data){
 	const grafico = data;
 	$("#resultado-grafico").removeClass("d-none");
+	$("#resultado-relatorio").addClass("d-none");
+	$("#resultado-pizza").addClass("d-none");
 	var options = {
 		animationEnabled: true,
 		theme: "light2",
 		title: {
-			text: "Monthly Sales Data"
+			text: "Gráfico"
 		},
 		axisX: {
 			valueFormatString: "MMM",
@@ -173,19 +178,12 @@ function renderizarGrafico(data){
 			itemclick: toggleDataSeries
 		},
 		data: [
-			{
-				type: "line",
-				name: "Promedio Costo Fijo",
-				showInLegend: true,
-				yValueFormatString: "$#,##0",
-				dataPoints: [
-				]
-			}
+			
 		]
 	};
 	setData(grafico);
 	console.log(options.data);
-	$("#chartContainer").CanvasJSChart(options);
+	$("#graficoContainer").CanvasJSChart(options);
 
 	function addSymbols(e) {
 		var suffixes = ["", "K", "M", "B"];
@@ -208,7 +206,7 @@ function renderizarGrafico(data){
 	}
 	function setData(grafico){
 		var totalCosto = 0;
-		var promedio = getPromedio(grafico);
+		var promedio = getPromedioGrafico(grafico);
 		for ( let i = 0; i < grafico.length; i++ ) {
 			if ( i == 0 || grafico[i].co_usuario != grafico[i-1].co_usuario ) {
 				options.data.push({
@@ -221,15 +219,83 @@ function renderizarGrafico(data){
 				});
 			}
 			options.data[options.data.length - 1].dataPoints.push({ x: new Date(grafico[i].anio, grafico[i].mes - 1 ), y: grafico[i].receita_liquida });
-			if ( i == 0 || (grafico[i].mes != grafico[i-1].mes) ) {
-				options.data[0].dataPoints.push({ x: new Date(grafico[i].anio, grafico[i].mes - 1 ), y: promedio });
+		}
+
+		options.data.push({
+			type: "line",
+			name: "Promedio Costo Fijo",
+			showInLegend: true,
+			yValueFormatString: "$#,##0",
+			dataPoints: []
+		});
+		const fechaPromedio = getPeriodoPromedio();
+		const mes_anio = fechaPromedio;
+		for (let i = 0; i < fechaPromedio.length; i++){
+			options.data[options.data.length - 1].dataPoints.push({ x: fechaPromedio[i], y: promedio });
+		}
+	}
+}
+
+
+function renderizarPizza(data){
+	const pizza = data;
+	console.log(pizza);
+	//$("#resultado-grafico").addClass("d-none");
+	$("#resultado-pizza").removeClass("d-none");
+	$("#resultado-relatorio").addClass("d-none");
+	$("#resultado-grafico").addClass("d-none");
+
+	var options = {
+		title: {
+			text: "Receita Liquida"
+		},
+		subtitles: [{
+			text: "As of November, 2017"
+		}],
+		animationEnabled: true,
+		data: [{
+			type: "pie",
+			startAngle: 40,
+			toolTipContent: "<b>{label}</b>: {y}%",
+			showInLegend: "true",
+			legendText: "{label}",
+			indexLabelFontSize: 16,
+			indexLabel: "{label} - {y}%",
+			dataPoints: []
+		}]
+	};
+	setData(pizza);
+	$("#pizzaContainer").CanvasJSChart(options);
+
+	function setData(pizza){
+		var total = pizza.reduce((a, b) => a + b.receita_liquida, 0);
+		var acumulador = 0;
+		console.log(total);
+		for (let i = 0; i < pizza.length; i++){
+			acumulador = acumulador + pizza[i].receita_liquida;
+			if( i == pizza.length - 1 || pizza[i].co_usuario != pizza[i+1].co_usuario ){
+				options.data[0].dataPoints.push({ y: ((100 * acumulador) / total).toFixed(2), label: pizza[i].no_usuario });
+				acumulador = 0;
 			}
 		}
 	}
 }
 
 
-function getPromedio (grafico) {
+function getPromedioPizza (pizza) {
+	var receita_liquida_total = 0;
+	var costos = pizza.filter((current, i, a) => {
+		if( i == 0 || current.co_usuario != a[i-1].co_usuario ) {
+			custo_fixo = custo_fixo + current.custo_fixo;
+			return true
+		} else {
+			return false
+		}
+	});
+	return custo_fixo / costos.length;
+}
+
+function getPromedioGrafico (grafico) {
 	var custo_fixo = 0;
 	var costos = grafico.filter((current, i, a) => {
 		if( i == 0 || current.co_usuario != a[i-1].co_usuario ) {
@@ -240,13 +306,29 @@ function getPromedio (grafico) {
 		}
 	});
 	return custo_fixo / costos.length;
+}
 
-	//console.log(custo_total / unique.length);
+function getPeriodoPromedio() {
+	const fechas = [];
+	const md = $("#mesDesde").val();
+	const ad = $("#anioDesde").val();
+	const mh = $("#mesHasta").val();
+	const ah = $("#anioHasta").val();
+	counter = parseInt(md);
+	for(var i=parseInt(ad);i<=parseInt(ah);i++)
+	{
+	  for(var j=counter;j<=12;j++){
+	    if(j>mh && i==ah){
+	       continue;
+	    }
+	    fechas.push(new Date(i,j-1));
+	  }
+	  counter = 1;
+	}
+	return fechas;
 }
 
 function getPeriodo (mes, anio, objetoMes) {
 	var { nombre } = objetoMes.find(m => m.mes == mes);
 	return nombre + " de " + anio;
 }
-
-
